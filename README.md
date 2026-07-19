@@ -49,34 +49,11 @@ examples/   — one file per worked scenario or regression test, each run by
               `test/run.ts` as a pass/fail suite. Covers the paper's own
               examples (postcode extraction, retry loops, the Fenton/Denning
               leak, quarantine + endorse, the CaMeL-style lattice) plus a
-              regression test per bug documented below.
+              regression test per bug found and fixed during rule-by-rule
+              audits against the paper's formal semantics (see git history
+              for details — none are hypothetical, each has a regression
+              test that was verified to fail against the pre-fix code).
 ```
-
-## Bugs this port found in itself
-
-Three rounds of a rule-by-rule audit against the paper's exact formal
-text (not just scenario testing) found eight real divergences between
-this port and the spec, all fixed, each with a regression test verified
-to actually fail against the pre-fix code. The common thread: **the
-paper's semantics is substitution-based** (`e[x := e′]`), not
-environment-based, and most of these are a different place where that
-translation dropped something the substitution reading requires —
-silently, since TypeScript can't catch it.
-
-| # | Bug | Fix | Regression test |
-|---|---|---|---|
-| 1 | `var`/`field` didn't rejoin the ambient `pc` on lookup, dropping Confinement (`pc ⊑ ℓ(V)`) — a second instance of the Fenton/Denning implicit-flow class the `send` rule exists to close. | Join ambient `pc`/container label on lookup, matching `⇓-ArrayIndex`. | `var-pc-confinement.ts` |
-| 2 | `labelDyn`/`labelTest`/`labelAssert`/`endorse` used a value's *shallow* label where the spec's `flatten(V)=n:v` requires `deepLabel(V)` — deep taint nested inside a policy value silently escaped. Demonstrated: an `assert` the spec requires to be refused instead silently succeeded. | Use the existing `deepLabel` helper (already used correctly by `send`/`prim`) in all four. | `deep-label-confinement.ts` |
-| 3 | `prim`/`binop` results skipped `wrapValues`, leaving nested fields with no valid lattice label — reading one back out crashed (`TypeError`) instead of computing a label. | Added a `wrapValues` helper in `evaluator.ts` (where the lattice is in scope) and applied it to both. | `prim-wrap-values.ts` |
-| 4 | `binop` skipped `stripLabels` before calling `primEval`, unlike `prim` right next to it, despite being literally defined as sugar for it (§B.1). | Match `prim`'s handling exactly. | `binop-prim-consistency.ts` |
-| 5 | `recv` evaluated a freshly-parsed (attacker-influenceable) response against the **caller's entire local environment** merged with the prelude, instead of the prelude alone (`M.parse(r)[M.preludeEnv]`) — a full label-system bypass via variable-name collision for any sufficiently expressive `Model.parse`. | Evaluate against `preludeEnv` alone. | `recv-scope-isolation.ts` |
-| 6 | `camelLattice.readersFlowsTo` had its confidentiality direction inverted: a value restricted to a few readers was wrongly allowed to flow into a fully public destination (a real leak via the ordinary `send` check), and bottom failed to flow into restricted destinations (violating `∀l, ⊥ ⊑ l`). | Check the source's `unrestricted` case before the destination's. | `camel-readers-flowsto.ts` |
-| 7 | `mod`/`!=` were constructible via the `BinOp` type but never wired into `binopPrimName`/`defaultPrimEval` — always threw regardless of operands. Not a security bug (fails loudly), but a real gap against the paper's `+\|−\|×\|÷\|mod\|=\|<\|>\|≤\|≥` grammar. | Wire both through end to end as ordinary primitives. | `missing-binops.ts` |
-| 8 | Record literals used a plain `Map`, so a duplicate field name silently took the *last* occurrence's value — the spec's `lookup(f, f⃗)` explicitly requires "a duplicate field is shadowed by the first". Each field's expression is still evaluated in order (side effects from a shadowed field must still fire), only the stored value was wrong. | Only store a field's value the first time its name is seen. | `record-duplicate-field.ts` |
-
-No guarantee even two audit passes were exhaustive — this is precisely
-why the Lean development remains the actual source of truth for the
-security theorem, not this repository.
 
 ## Design choices worth knowing about
 

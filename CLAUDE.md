@@ -93,10 +93,10 @@ then found again, independently, in seven more places across three
 rounds of a rule-by-rule audit against the paper's exact text, spanning
 `evaluator.ts` (rule implementations), `lattice.ts` (a lattice instance's
 internal correctness), and the completeness of the primitive table
-against the paper's grammar. See "Bugs this port found in itself" in
-`README.md` for the full table (8 instances, each with its regression
-test) — don't re-describe them here; keep that table as the one place
-this list lives.
+against the paper's grammar. Each instance has its own regression test in
+`examples/` and its own commit message with the full writeup — check git
+log/blame on `evaluator.ts`/`lattice.ts` for the details rather than
+looking for a running list in a doc, which would just drift out of sync.
 
 **When touching `evaluator.ts`, especially any case that reads a value out
 of an environment/record/array rather than constructing one fresh, or that
