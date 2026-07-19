@@ -46,6 +46,14 @@ pnpm run example:index-non-integer
 pnpm run example:deep-label-closure-env
 pnpm run example:bounded-endorse-boolean-domain
 pnpm run example:primeval-error-type
+pnpm run example:label-test
+pnpm run example:scalar-error-paths
+pnpm run example:security-checks-standalone
+pnpm run example:endorse-unfactored-lattice
+pnpm run example:model-primitives-coverage
+pnpm run example:camel-lattice-any-source
+pnpm run example:run-program-base-env
+pnpm run example:label-lit-decodable
 ```
 
 There is no separate lint step and no per-test filtering flag — `test/run.ts`

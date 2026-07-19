@@ -28,7 +28,15 @@
     "example:index-non-integer": "node --import tsx examples/index-non-integer.ts",
     "example:deep-label-closure-env": "node --import tsx examples/deep-label-closure-env.ts",
     "example:bounded-endorse-boolean-domain": "node --import tsx examples/bounded-endorse-boolean-domain.ts",
-    "example:primeval-error-type": "node --import tsx examples/primeval-error-type.ts"
+    "example:primeval-error-type": "node --import tsx examples/primeval-error-type.ts",
+    "example:label-test": "node --import tsx examples/label-test.ts",
+    "example:scalar-error-paths": "node --import tsx examples/scalar-error-paths.ts",
+    "example:security-checks-standalone": "node --import tsx examples/security-checks-standalone.ts",
+    "example:endorse-unfactored-lattice": "node --import tsx examples/endorse-unfactored-lattice.ts",
+    "example:model-primitives-coverage": "node --import tsx examples/model-primitives-coverage.ts",
+    "example:camel-lattice-any-source": "node --import tsx examples/camel-lattice-any-source.ts",
+    "example:run-program-base-env": "node --import tsx examples/run-program-base-env.ts",
+    "example:label-lit-decodable": "node --import tsx examples/label-lit-decodable.ts"
   },
   "devDependencies": {
     "c8": "^12.0.0",

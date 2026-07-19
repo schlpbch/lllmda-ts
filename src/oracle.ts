@@ -16,6 +16,7 @@
  * state, let alone prove. What we keep is the actual engineering pattern
  * the theorem is *about*: the evaluator never talks to a model directly.
  */
+import { RuntimeError } from "./errors.js";
 
 export interface Oracle {
   /**
@@ -40,7 +41,12 @@ export function scriptedOracle(responses: ReadonlyArray<string>): Oracle {
   return {
     async respond(_history, callIndex) {
       if (callIndex >= responses.length) {
-        throw new Error(
+        // Plain Error here would break the same invariant fixed in
+        // model.ts's defaultPrimEval (see README/CLAUDE.md's audit
+        // history): every ordinary, expected failure evaluate() can
+        // produce should be a RuntimeError, distinguishable from a
+        // SecurityError policy refusal.
+        throw new RuntimeError(
           `scriptedOracle: no response scripted for call #${callIndex} ` +
             `(only ${responses.length} scripted)`,
         );

@@ -14,16 +14,23 @@
  * for this construct.
  *
  * Fixed by building each domain entry with the scalar constructor
- * matching its actual JS type (`bool`/`num`/`str`).
+ * matching its actual JS type (`bool`/`num`/`str`) — also covers the
+ * `number` branch of that fix (`domainScalarLit`'s `typeof value ===
+ * "number"` case), otherwise unexercised since every other bounded_endorse
+ * usage in this repo (booleans here, categories in
+ * `quarantine-classify.ts`) sticks to one domain type.
  */
-import { app, bool, labelLit, letIn, v } from "../src/ast.js";
+import { app, bool, labelLit, letIn, num, v } from "../src/ast.js";
 import { U, usFactoredLattice } from "../src/lattice.js";
 import { emptyConversation, runProgram } from "../src/evaluator.js";
 import { defaultParse, defaultPrimEval, defaultSerialise, type Model } from "../src/model.js";
 import { boundedEndorseDef } from "../src/prelude.js";
 import { scriptedOracle } from "../src/oracle.js";
 
-const preludeSource = new Map([["bounded_endorse_bool", boundedEndorseDef([true])]]);
+const preludeSource = new Map([
+  ["bounded_endorse_bool", boundedEndorseDef([true])],
+  ["bounded_endorse_status_code", boundedEndorseDef([200, 404, 500])],
+]);
 
 const model: Model<typeof usFactoredLattice.bottom> = {
   lattice: usFactoredLattice,
@@ -68,9 +75,24 @@ async function checkOutOfDomain() {
   if (!stillUntrusted) process.exit(1);
 }
 
+async function checkNumberDomain() {
+  const program = letIn("raw", labelLit(U, num(404)), app(v("bounded_endorse_status_code"), v("raw")));
+  const result = await runProgram(model, scriptedOracle([]), usFactoredLattice.bottom, emptyConversation(usFactoredLattice.bottom), program);
+  const isTrusted = !usFactoredLattice.equals(result.value.label, U);
+  console.log(
+    isTrusted ? "PASS" : "FAIL",
+    "in-domain number `404` is washed to trusted: value =",
+    JSON.stringify(result.value.value),
+    "label =",
+    usFactoredLattice.show(result.value.label),
+  );
+  if (!isTrusted) process.exit(1);
+}
+
 async function main() {
   await checkInDomain();
   await checkOutOfDomain();
+  await checkNumberDomain();
 }
 
 main();
