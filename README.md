@@ -1,6 +1,7 @@
 # llmbda-ts
 
 [![CI](https://github.com/schlpbch/lllmda-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/schlpbch/lllmda-ts/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 A TypeScript reference implementation of the **LLMbda calculus** — Garby,
 Gordon & Sands, *"The LLMbda Calculus: AI Agents, Conversations, and

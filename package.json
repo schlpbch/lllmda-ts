@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "A TypeScript reference implementation of the LLMbda calculus (Garby, Gordon, Sands 2026) — a labeled, dynamically information-flow-tracked lambda calculus for agentic LLM programs. NOT a proof: the noninterference theorem (TIPNI) is machine-checked only in the paper's Lean development. This port re-implements the operational semantics and tests the security-critical rules against the paper's own leak examples, but carries no formal guarantee.",
   "type": "module",
+  "license": "Apache-2.0",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "node --import tsx test/run.ts",
