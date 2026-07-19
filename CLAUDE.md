@@ -65,6 +65,57 @@ To add a new regression case: add an `examples/<name>.ts` file (it should
 assert/throw on failure the way the existing examples do) and it is picked
 up automatically by `test/run.ts` — no registration needed.
 
+## Verifying constitution compliance
+
+`CONSTITUTION.md` states this project's non-negotiable principles. Before
+considering any change to `src/` done, run the checks below — they are
+concrete, not aspirational; several are CI-enforced.
+
+- **Article 1 (paper fidelity).** For any `evaluator.ts`/`lattice.ts`
+  change: identify the exact paper section/rule it implements and confirm
+  the change matches the rule's text, not just "looks reasonable." If the
+  paper text is ambiguous or the port must diverge, that's Article 4, not
+  silent judgment.
+- **Article 2 (no overclaiming).** Before committing new prose (README,
+  release notes, code comments, commit messages), grep it for `proven`,
+  `verified`, `guarantee`, `sound(ness)` and confirm each occurrence is
+  either about the *paper's* Lean-checked results specifically, or
+  correctly hedged (e.g. "regression-tested against," not "verified").
+- **Article 3 (regression test proven to fail first).** For any bug fix:
+  copy the pre-fix source with `git show HEAD:src/<file>.ts > /tmp/<file>.ts`,
+  point the new example's imports at that copy, and confirm it fails;
+  then confirm the same example passes against the actual fix. Don't
+  commit a fix without having done this — a test that would have passed
+  even against the old code proves nothing.
+- **Article 4 (documented gaps).** If a change introduces or touches a
+  deliberate simplification (see "Design choices" below for the existing
+  list), add an inline comment at the divergence point and check whether
+  `README.md`/that list needs a matching update.
+- **Article 5 (minimalism).** Before adding a new abstraction,
+  configuration option, or generalized helper, confirm at least two
+  concrete, *current* call sites need it. If there's only one, inline it.
+- **Article 6 (rigor over velocity).** For any change to a `Lattice`/
+  `FactoredLattice` instance, run a lattice-law sanity check before
+  committing — reflexivity, transitivity, antisymmetry, the bottom law
+  (`flowsTo(bottom, x)` for representative `x`), and that `join` is a
+  least upper bound, not just idempotent/commutative. A quick
+  `node --import tsx -e "..."` script exercising `src/lattice.ts`
+  directly (see git history around commit `63cff57` for the pattern) is
+  enough — it doesn't need to become a permanent example unless it catches
+  something.
+- **Article 7 (100% coverage, enforced).** Run `pnpm run coverage` — it
+  must exit 0 (`c8 --check-coverage --statements 100 --functions 100
+  --lines 100 --branches 99`). If it fails: either the change needs a
+  test, or the newly-uncovered code is genuinely unreachable, in which
+  case extend `CONSTITUTION.md` Article 7's named list with the specific
+  file:line and the reason — never loosen the threshold numbers to make
+  the build pass.
+- **Article 8 (honest audit-scope framing).** If summarizing an audit
+  pass (to the user, in a commit message, or in docs), state what was
+  specifically checked ("rule-by-rule against §3/§5/§B", "lattice laws
+  for usLattice and camelLattice") — never "no bugs remain" or an
+  unqualified "fully verified."
+
 ## Architecture
 
 ```
