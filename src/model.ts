@@ -205,6 +205,8 @@ function binopEval(op: string, arg: BareValue): BareValue {
       return { kind: "number", value: numOf(a) * numOf(b) };
     case "div":
       return { kind: "number", value: numOf(a) / numOf(b) };
+    case "mod":
+      return { kind: "number", value: numOf(a) % numOf(b) };
     case "lt":
       return { kind: "bool", value: numOf(a) < numOf(b) };
     case "gt":
@@ -215,6 +217,8 @@ function binopEval(op: string, arg: BareValue): BareValue {
       return { kind: "bool", value: numOf(a) >= numOf(b) };
     case "eq":
       return { kind: "bool", value: scalarEq(a, b) };
+    case "neq":
+      return { kind: "bool", value: !scalarEq(a, b) };
     default:
       throw new Error(`binop_${op}: unknown operator`);
   }

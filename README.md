@@ -91,6 +91,8 @@ examples/
                                (strip-before, wrap-after); see below
   camel-readers-flowsto.ts     — regression test for the camelLattice
                                confidentiality-direction fix; see below
+  missing-binops.ts             — regression test for the missing mod/!=
+                               binop fix; see below
 
 test/run.ts    — runs every examples/*.ts as a pass/fail suite
 ```
@@ -223,16 +225,38 @@ sanity checks over a handful of representative labels, not just the
 specific leak case.
 Regression test: `examples/camel-readers-flowsto.ts`.
 
-The honest framing, said once and still true after finding five more:
+### 7. `mod`/`!=` binops constructible but never implemented
+
+Not a security bug — this one fails loudly rather than silently — but
+found the same way and worth recording for the same reason: §B.1's
+`⊕`-grammar is `+ | − | × | ÷ | mod | = | < | > | ≤ | ≥`, a genuine
+primitive `mod`. This port's `BinOp` TypeScript type (`ast.ts`) admits
+constructing `binop("%", ...)` — and, separately, `binop("!=", ...)`,
+which isn't in the paper's primitive grammar at all (the paper defines
+`≠` only as a *derived form*, `e1≠e2 ≜ if (e1=e2) then false else true`)
+but was present in this port's type as if it were a primitive too.
+Neither `binopPrimName` (`evaluator.ts`) nor `binopEval`
+(`model.ts`'s `defaultPrimEval`) had an entry for either, so both always
+threw `RuntimeError: unsupported binop: ...` regardless of operands —
+the type system happily let you build an `Expr` the interpreter could
+never evaluate. Fixed by adding `mod`/`!=` end to end as ordinary
+primitives (`≠` implemented directly rather than literally desugared
+through `if`, since negating an already-computed equality needs no
+extra pc-raising — the result's label is `pc ⊔ ℓ(left) ⊔ ℓ(right)`
+either way, identically to every other binop).
+Regression test: `examples/missing-binops.ts`.
+
+The honest framing, said once and still true after finding six more:
 this is exactly the class of subtle divergence the original plan warned
 "port the algorithm, not just the syntax" about. Two systematic audit
-passes found five further instances beyond the first, spanning both
-`evaluator.ts` (the rule implementations) and `lattice.ts` (a concrete
-lattice instance's own internal correctness) — which is itself evidence
-that *ad hoc* discovery (as bug 1 was) isn't enough, and there is no
-guarantee even two passes were exhaustive. This is precisely why the
-Lean development remains the actual source of truth for the security
-theorem, not this repository.
+passes found six further instances beyond the first, spanning
+`evaluator.ts` (the rule implementations), `lattice.ts` (a concrete
+lattice instance's own internal correctness), and the completeness of
+the primitive table against the paper's own grammar — which is itself
+evidence that *ad hoc* discovery (as bug 1 was) isn't enough, and there
+is no guarantee even two passes were exhaustive. This is precisely why
+the Lean development remains the actual source of truth for the
+security theorem, not this repository.
 
 ## Design choices worth knowing about
 
@@ -303,6 +327,7 @@ pnpm run example:prim-wrap-values
 pnpm run example:recv-scope-isolation
 pnpm run example:binop-prim-consistency
 pnpm run example:camel-readers-flowsto
+pnpm run example:missing-binops
 ```
 
 ## Where this could go

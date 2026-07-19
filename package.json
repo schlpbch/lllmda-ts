@@ -22,7 +22,8 @@
     "example:prim-wrap-values": "node --import tsx examples/prim-wrap-values.ts",
     "example:recv-scope-isolation": "node --import tsx examples/recv-scope-isolation.ts",
     "example:binop-prim-consistency": "node --import tsx examples/binop-prim-consistency.ts",
-    "example:camel-readers-flowsto": "node --import tsx examples/camel-readers-flowsto.ts"
+    "example:camel-readers-flowsto": "node --import tsx examples/camel-readers-flowsto.ts",
+    "example:missing-binops": "node --import tsx examples/missing-binops.ts"
   },
   "devDependencies": {
     "c8": "^12.0.0",

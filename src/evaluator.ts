@@ -472,12 +472,26 @@ function wrapValues<L>(lat: import("./lattice.js").Lattice<L>, bv: BareValue): B
 }
 
 function binopPrimName(op: string): string {
+  // §B.1's binop grammar is `+ | − | × | ÷ | mod | = | < | > | ≤ | ≥`
+  // ("mod" was missing here entirely — a genuine primitive from the
+  // paper's grammar that this port's BinOp type admits constructing but
+  // that always threw "unsupported binop" when evaluated). "!=" isn't in
+  // that grammar at all — the paper defines it as a *derived form*,
+  // `e1 ≠ e2 ≜ if (e1 = e2) then false else true` (§B.1) — but this
+  // port's BinOp type includes it as if it were a primitive, and it had
+  // the exact same "always throws" gap. Implemented here as a direct
+  // primitive (binop_neq) rather than literally desugaring through `if`,
+  // since negating an already-computed equality doesn't need `if`'s
+  // pc-raising machinery: the result's label is pc ⊔ ℓ(left) ⊔ ℓ(right)
+  // either way, identically to every other binop.
   const table: Record<string, string> = {
     "+": "binop_add",
     "-": "binop_sub",
     "*": "binop_mul",
     "/": "binop_div",
+    "%": "binop_mod",
     "==": "binop_eq",
+    "!=": "binop_neq",
     "<": "binop_lt",
     ">": "binop_gt",
     "<=": "binop_le",
