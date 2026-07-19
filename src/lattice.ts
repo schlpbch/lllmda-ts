@@ -93,10 +93,23 @@ const readersJoin = (a: Readers, b: Readers): Readers => {
   return { kind: "restricted", readers: new Set([...a.readers].filter((r) => b.readers.has(r))) };
 };
 const readersFlowsTo = (a: Readers, b: Readers): boolean => {
-  // "a may flow to b" for reader-sets: b must not be more permissive than a
-  // (fewer readers = more restrictive = higher in the confidentiality order).
-  if (b.kind === "unrestricted") return true;
-  if (a.kind === "unrestricted") return false;
+  // "a may flow to b" for reader-sets: readers(b) must be a subset of
+  // readers(a) — b must not be more permissive than a (fewer readers =
+  // more restrictive = higher in the confidentiality order). `unrestricted`
+  // stands for the universal reader set, so it is always a valid *source*
+  // (readers(b) ⊆ universal, for any b — public data may flow anywhere)
+  // but never a valid non-trivial *destination* from a restricted source
+  // (the universal set is never a subset of a smaller, finite one — a
+  // restricted/secret value must not be allowed to flow into an
+  // unrestricted/public context). Check `a` first: an `unrestricted`
+  // source must short-circuit to true before an `unrestricted`
+  // destination is checked, or bottom (whose readers are unrestricted)
+  // fails to flow to every other label, violating the basic lattice law
+  // ∀l, ⊥ ⊑ l — and, far more seriously, checking `b` first previously
+  // let a `restricted` (secret) value flow into an `unrestricted`
+  // (public) destination, a genuine confidentiality leak.
+  if (a.kind === "unrestricted") return true;
+  if (b.kind === "unrestricted") return false;
   return [...b.readers].every((r) => a.readers.has(r));
 };
 

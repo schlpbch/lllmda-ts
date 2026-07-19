@@ -39,6 +39,7 @@ pnpm run example:deep-label-confinement
 pnpm run example:prim-wrap-values
 pnpm run example:recv-scope-isolation
 pnpm run example:binop-prim-consistency
+pnpm run example:camel-readers-flowsto
 ```
 
 There is no separate lint step and no per-test filtering flag — `test/run.ts`
@@ -98,12 +99,21 @@ to it (regression test `examples/binop-prim-consistency.ts`); and `recv`
 merged the *caller's entire local environment* into scope for a freshly
 parsed (attacker-influenceable) response instead of `preludeEnv` alone, a
 complete label-system bypass via name collision rather than a missing join
-(regression test `examples/recv-scope-isolation.ts`). See "Bugs this port
-found in itself" in `README.md` for the full writeup of all five.
+(regression test `examples/recv-scope-isolation.ts`). A second audit pass
+over `lattice.ts` itself then found `camelLattice.readersFlowsTo` had its
+confidentiality direction inverted — a restricted-to-a-few-readers value
+was wrongly allowed to flow into a fully public destination, an actual
+leak reachable through the ordinary `send` check, not just a bottom-law
+violation (regression test `examples/camel-readers-flowsto.ts`). See
+"Bugs this port found in itself" in `README.md` for the full writeup of
+all six.
 **When touching `evaluator.ts`, especially any case that reads a value out
 of an environment/record/array rather than constructing one fresh, or that
 calls `Model.primEval`/`Model.toLabel`, check it against the exact paper
-rule text** — five instances of this bug class have been found so far
+rule text — and when adding or touching a `Lattice`/`FactoredLattice`
+instance, sanity-check `flowsTo(bottom, x)` holds for representative `x`,
+not just that `join` is idempotent/commutative.** Six instances of this
+bug class have been found so far
 (implicit flow through an untaken/already-bound path, or an
 insufficiently-isolated evaluation context), and there is no guarantee
 that was exhaustive.

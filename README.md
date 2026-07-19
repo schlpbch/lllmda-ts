@@ -89,20 +89,24 @@ examples/
                                see "Bugs this port found in itself"
   binop-prim-consistency.ts    — regression test for binop/prim consistency
                                (strip-before, wrap-after); see below
+  camel-readers-flowsto.ts     — regression test for the camelLattice
+                               confidentiality-direction fix; see below
 
 test/run.ts    — runs every examples/*.ts as a pass/fail suite
 ```
 
 ## Bugs this port found in itself
 
-Twice now — once while building the prelude module, and again during a
-deliberate rule-by-rule audit against the paper's formal semantics —
-tracing through the exact wording of a rule surfaced a real gap between
-what this port's `evaluator.ts` did and what the paper requires. Every
-instance below was fixed, given a regression test that was verified to
-actually fail against the pre-fix code before being committed against
-the fixed version (not a rubber stamp), and is left documented here
-rather than quietly squashed, because the pattern connecting them is the
+More than once now — first while building the prelude module, then
+during two rounds of a deliberate rule-by-rule audit against the paper's
+formal semantics — tracing through the exact wording of a rule (or, in
+one case, the exact first-principles meaning of a lattice's own
+`flowsTo`) surfaced a real gap between what this port did and what the
+paper requires. Every instance below was fixed, given a regression test
+that was verified to actually fail against the pre-fix code before being
+committed against the fixed version (not a rubber stamp), and is left
+documented here rather than quietly squashed, because the pattern
+connecting them is the
 whole point: **the paper's semantics is substitution-based**
 (`e[x := e′]`, §3), not environment-based, and every one of these bugs
 is a different place where that translation dropped something the
@@ -187,17 +191,46 @@ to a same-named local binding of the calling program: a complete bypass
 of the label system via name collision, not merely a mislabeling.
 `defaultParse` (JSON-only) can't emit a `var` AST node, so no example
 using it was ever exposed to this — the regression test exercises it
-with a `parse` that can. Arguably the most severe of the five: not a
-missing join, but an entire unintended channel. Fixed by evaluating
-against `preludeEnv` alone.
+with a `parse` that can. Not a missing join, but an entire unintended
+channel. Fixed by evaluating against `preludeEnv` alone.
 Regression test: `examples/recv-scope-isolation.ts`.
 
-The honest framing, said once and still true after finding four more:
+### 6. `camelLattice`'s confidentiality direction inverted (`readersFlowsTo`)
+
+Found in a second audit pass, this time over `lattice.ts` itself rather
+than `evaluator.ts`: the CaMeL-style Sources×Readers lattice's
+`readersFlowsTo` checked whether the *destination* label was
+`unrestricted` before checking whether the *source* was. Two consequences,
+one merely annoying and one a genuine leak:
+
+- `flowsTo(⊥, restricted-label)` was `false` for every non-trivial
+  restricted label — bottom, whose readers are `unrestricted`, failed to
+  flow into any restricted destination at all, violating the basic
+  join-semilattice law every label lattice must satisfy per §3.2
+  (`∀l, ⊥ ⊑ l`). A fail-closed availability bug.
+- Far more seriously, `flowsTo(restricted-label, ⊥)` was `true` — a
+  value restricted to a small set of readers (e.g. `{alice}`) was
+  allowed to flow into a fully `unrestricted`/public destination. That
+  is precisely the confidentiality leak this whole calculus exists to
+  prevent, reachable through the ordinary `send` no-high-upgrade check
+  (§1/§3.4) — demonstrated directly: raising `pc` to an alice-only
+  label and sending into an already-public conversation was silently
+  allowed instead of refused.
+
+Both directions traced to the same root cause (checking `b`'s kind before
+`a`'s) and were fixed together, along with the associated lattice-law
+sanity checks over a handful of representative labels, not just the
+specific leak case.
+Regression test: `examples/camel-readers-flowsto.ts`.
+
+The honest framing, said once and still true after finding five more:
 this is exactly the class of subtle divergence the original plan warned
-"port the algorithm, not just the syntax" about. A systematic pass found
-four further instances beyond the first, which is itself evidence that
-*ad hoc* discovery (as bug 1 was) isn't enough — and there is no
-guarantee this pass was exhaustive either. This is precisely why the
+"port the algorithm, not just the syntax" about. Two systematic audit
+passes found five further instances beyond the first, spanning both
+`evaluator.ts` (the rule implementations) and `lattice.ts` (a concrete
+lattice instance's own internal correctness) — which is itself evidence
+that *ad hoc* discovery (as bug 1 was) isn't enough, and there is no
+guarantee even two passes were exhaustive. This is precisely why the
 Lean development remains the actual source of truth for the security
 theorem, not this repository.
 
@@ -269,6 +302,7 @@ pnpm run example:deep-label-confinement
 pnpm run example:prim-wrap-values
 pnpm run example:recv-scope-isolation
 pnpm run example:binop-prim-consistency
+pnpm run example:camel-readers-flowsto
 ```
 
 ## Where this could go
