@@ -29,7 +29,7 @@ represented, how responses are parsed, what primitives exist — is a
                   EvalResult<L> = { conv, value }
 ```
 
-`evaluate` is a pure recursive function of its arguments (module the
+`evaluate` is a pure recursive function of its arguments (modulo the
 `Oracle` call, which is the one deliberately-impure boundary — see
 "Where nondeterminism lives" below). Everything else — labels, the
 conversation, the environment — is threaded explicitly rather than

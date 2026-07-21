@@ -1,14 +1,14 @@
 # LLMbdaJS
 
-[![CI](https://github.com/schlpbch/lllmda-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/schlpbch/lllmda-ts/actions/workflows/ci.yml)
+[![CI](https://github.com/schlpbch/LLMbdaJS/actions/workflows/ci.yml/badge.svg)](https://github.com/schlpbch/LLMbdaJS/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/schlpbch/lllmda-ts/badges/coverage.json)](https://github.com/schlpbch/lllmda-ts/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/schlpbch/LLMbdaJS/badges/coverage.json)](https://github.com/schlpbch/LLMbdaJS/actions/workflows/ci.yml)
 
 A TypeScript reference implementation of the **LLMbda calculus** — Garby,
 Gordon & Sands, *"The LLMbda Calculus: AI Agents, Conversations, and
 Information Flow"* (arXiv:2602.20064, July 2026).
 
-## What this trie to be
+## What this tries to be
 
 An executable interpreter for the calculus's operational semantics:
 labeled lambda calculus + first-class conversation primitives (`send`,
