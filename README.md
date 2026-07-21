@@ -4,30 +4,34 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/schlpbch/LLMbdaJS/badges/coverage.json)](https://github.com/schlpbch/LLMbdaJS/actions/workflows/ci.yml)
 
-A TypeScript reference implementation of the **LLMbda calculus** — Garby,
-Gordon & Sands, *"The LLMbda Calculus: AI Agents, Conversations, and
-Information Flow"* (arXiv:2602.20064, July 2026).
+A TypeScript reference implementation of the **LLMbda calculus** by
+[Zachary Garby](https://zacgarby.co.uk/),
+[Andrew Gordon]([https://gordonbrander.com), and
+[Sands](https://www.cse.chalmers.se/~dave/Homepage_David_Sands/Home.html) and
+presented in their paper
+[_"The LLMbda Calculus: AI Agents, Conversations, and Information Flow"_](https://arxiv.org/abs/2602.20064)
+(arXiv:2602.20064, July 2026).
 
-## What this is be
+## What this Intends to Be
 
-An executable interpreter for the calculus's operational semantics:
-labeled lambda calculus + first-class conversation primitives (`send`,
-`recv`, `fork`, `clear`) + dynamic information-flow labels (`l : e`,
-`e1 ? e2`, `assert`, `endorse`). It follows the paper's §3/§5/§B big-step
-rules, evaluation-rule by evaluation-rule — each rule in
-`src/evaluator.ts` is commented with the paper section it implements.
+An executable interpreter for the calculus's operational semantics: labeled
+lambda calculus + first-class conversation primitives (`send`, `recv`, `fork`,
+`clear`) + dynamic information-flow labels (`l : e`, `e1 ? e2`, `assert`,
+`endorse`). It follows the paper's §3/§5/§B big-step rules, evaluation-rule by
+evaluation-rule — each rule in `src/evaluator.ts` is commented with the paper
+section it implements.
 
-## What this is **not**
+## What this is **Not**
 
-**This port carries no formal guarantee.** The paper's central results —
-Theorem 1 (TIPNI), Theorem 2 (Insulated TIPNI), Theorem 3 (oracular
-correctness) — are machine-checked in the paper's Lean 4 development.
-Porting the *algorithm* to TypeScript does not port the *proof*.
+**This port carries no formal guarantee.** The paper's central results — Theorem
+1 (**TIPNI**), Theorem 2 (**Insulated TIPNI**), Theorem 3 (**oracular
+correctness**) — are machine-checked in the paper's Lean 4 development. Porting
+the _algorithm_ to TypeScript does not port the _proof_.
 
-What this repo tries instead: implement the same evaluation rules so the
-same *inputs* produce the same *outputs* as the paper's interpreter
-(spot-checked against the paper's own worked examples in `examples/`,
-including its named leak example and a positive `endorse` test). 
+What this repo tries instead: implement the same evaluation rules so the same
+_inputs_ produce the same _outputs_ as the paper's interpreter (spot-checked
+against the paper's own worked examples in `examples/`, including its named leak
+example and a positive `endorse` test).
 
 ## Structure
 
@@ -52,28 +56,27 @@ examples/        — one file per worked scenario or regression test, each run b
 
 ## Design choices worth knowing about
 
-See `docs/adr/` for the full reasoning and alternatives considered behind
-each of these.
+See `docs/adr/` for the full reasoning and alternatives considered behind each
+of these.
 
 - **`quarantine`/`robust_endorse`/`bounded_endorse` are object-language
-  closures** (`prelude.ts`), not host TS functions — agent-generated code
-  can only call names bound in the object language's environment.
-  `bounded_endorse` is a builder rather than a bare `Expr` because its
-  trust domain must be a fixed, static list baked in at construction time
-  (§E.3 — a runtime-computed domain forfeits the log₂n leakage bound).
-- **No `weight`/probability tracking, no "fuel" argument.** Both are
-  artifacts of the paper's Lean-side proof machinery (probabilistic
-  big-step semantics, termination proofs) the executable interpreter
-  doesn't need.
-- **Labels are homogeneous per run.** `BareValue`'s record/array fields
-  store `Labeled<unknown>` rather than threading `L` through every data
-  shape — sound since a single `evaluate()` call always uses one concrete
-  `Model<L>`, asserted via a single `asL<L>()` cast where it matters.
+  closures** (`prelude.ts`), not host TS functions — agent-generated code can
+  only call names bound in the object language's environment. `bounded_endorse`
+  is a builder rather than a bare `Expr` because its trust domain must be a
+  fixed, static list baked in at construction time (§E.3 — a runtime-computed
+  domain forfeits the log₂n leakage bound).
+- **No `weight`/probability tracking, no "fuel" argument.** Both are artifacts
+  of the paper's Lean-side proof machinery (probabilistic big-step semantics,
+  termination proofs) the executable interpreter doesn't need.
+- **Labels are homogeneous per run.** `BareValue`'s record/array fields store
+  `Labeled<unknown>` rather than threading `L` through every data shape — sound
+  since a single `evaluate()` call always uses one concrete `Model<L>`, asserted
+  via a single `asL<L>()` cast where it matters.
 - **`endorse` requires a `FactoredLattice`**, checked at evaluation time
   (`RuntimeError`, not a type error) rather than in `Model<L>`'s type.
-- **Default `parse`/`serialise` is naive JSON** (`JSON.parse` with a
-  try/catch) — the paper's §7.3 flags the lack of a grammar-constrained
-  parser as a real utility cost; a real deployment should replace this.
+- **Default `parse`/`serialise` is naive JSON** (`JSON.parse` with a try/catch)
+  — the paper's §7.3 flags the lack of a grammar-constrained parser as a real
+  utility cost; a real deployment should replace this.
 
 ## Running it
 
@@ -85,33 +88,35 @@ pnpm run coverage    # same suite, instrumented with c8 (text + html report in c
 pnpm run example:<name>   # run one example directly, e.g. example:postcode
 ```
 
-See `package.json` for the full list of `example:*` scripts (one per file
-in `examples/`).
+See `package.json` for the full list of `example:*` scripts (one per file in
+`examples/`).
 
 ## Where this could go
 
 Roughly in order of how much they'd actually buy you:
 
-1. **A "randori"-style agent harness** (§7.1) — practice against a mock
-   world state, then regenerate and run for real — proving the port is
-   usable for something, not just faithful to the semantics.
-2. **Property-based testing for TIPNI-adjacent claims** (`fast-check`):
-   generate `∼ₘ`-related program pairs and check their traces are
-   compatible under a scripted oracle — real evidence, never a proof, but
-   also a good way to hunt for further undiscovered divergences.
-3. **A conformance-vector harness against the Lean `peval`** — diffing
-   this interpreter's output against Lean-side `(program, oracle) →
-   (conversation, value)` triples on shared test programs. Given the bugs
-   already found by hand, probably the highest-value item on this list.
+1. **A "Randori"-style agent harness** (§7.1) — practice against a mock world
+   state, then regenerate and run for real — proving the port is usable for
+   something, not just faithful to the semantics.
+2. **Property-based testing for TIPNI-adjacent claims** (`fast-check`): generate
+   `∼ₘ`-related program pairs and check their traces are compatible under a
+   scripted oracle — real evidence, never a proof, but also a good way to hunt
+   for further undiscovered divergences.
+3. **A conformance-vector harness against the Lean `peval`** — diffing this
+   interpreter's output against Lean-side
+   `(program, oracle) → (conversation, value)` triples on shared test programs.
+   Given the bugs already found by hand, probably the highest-value item on this
+   list.
 4. **A real `Oracle` backed by an actual LLM API** — currently only
-   `scriptedOracle`/`ruleOracle` (test doubles) exist; a production
-   oracle is a thin adapter.
+   `scriptedOracle`/`ruleOracle` (test doubles) exist; a production oracle is a
+   thin adapter.
 
 ## Where this currently does not go
 
-Porting to another programming language (like Python or Rust). While this
-would be fun endevours, getting this implementation complete and correct
-shall be the current focus.
+Porting to another programming language (like Python or Rust). While this would
+be fun endeavors, getting this implementation complete and correct shall be the
+current focus.
 
 ## Legal Stuff
-Copyright 2026, Andreas Schlapbach 
+
+Copyright, 2026, Andreas Schlapbach
