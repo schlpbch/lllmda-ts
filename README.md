@@ -6,9 +6,9 @@
 
 A TypeScript reference implementation of the **LLMbda calculus** by
 [Zachary Garby](https://zacgarby.co.uk/),
-[Andrew Gordon]([https://gordonbrander.com), and
-[Sands](https://www.cse.chalmers.se/~dave/Homepage_David_Sands/Home.html) and
-presented in their paper
+[Andrew D Gordon](https://AndrewDGordon.github.io), and
+[David Sands](https://www.cse.chalmers.se/~dave/Homepage_David_Sands/Home.html)
+and presented in their paper
 [_"The LLMbda Calculus: AI Agents, Conversations, and Information Flow"_](https://arxiv.org/abs/2602.20064)
 (arXiv:2602.20064, July 2026).
 
@@ -23,10 +23,16 @@ section it implements.
 
 ## What this is **Not**
 
-**This port carries no formal guarantee.** The paper's central results — Theorem
-1 (**TIPNI**), Theorem 2 (**Insulated TIPNI**), Theorem 3 (**oracular
-correctness**) — are machine-checked in the paper's Lean 4 development. Porting
-the _algorithm_ to TypeScript does not port the _proof_.
+**This port carries no formal guarantee.**
+
+The paper's central results:
+
+- Theorem 1 (**TIPNI**),
+- Theorem 2 (**Insulated TIPNI**),
+- Theorem 3 (**oracular correctness**)
+
+are machine-checked in the paper's Lean 4 development. Porting the _algorithm_
+to TypeScript does not port the _proof_.
 
 What this repo tries instead: implement the same evaluation rules so the same
 _inputs_ produce the same _outputs_ as the paper's interpreter (spot-checked
@@ -91,7 +97,7 @@ pnpm run example:<name>   # run one example directly, e.g. example:postcode
 See `package.json` for the full list of `example:*` scripts (one per file in
 `examples/`).
 
-## Where this could go
+## Where this Could Go
 
 Roughly in order of how much they'd actually buy you:
 
@@ -111,7 +117,7 @@ Roughly in order of how much they'd actually buy you:
    `scriptedOracle`/`ruleOracle` (test doubles) exist; a production oracle is a
    thin adapter.
 
-## Where this currently does not go
+## Where this Currently does not Go
 
 Porting to another programming language (like Python or Rust). While this would
 be fun endeavors, getting this implementation complete and correct shall be the
@@ -119,4 +125,4 @@ current focus.
 
 ## Legal Stuff
 
-Copyright, 2026, Andreas Schlapbach
+Copyright, 2026 - Andreas Schlapbach
