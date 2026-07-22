@@ -153,7 +153,7 @@ Roughly in order of how much they'd actually buy you:
 ## Where this Currently does not Go
 
 Porting to another programming language (like Python, Rust or Haskell). While
-this would be fun endeavors, getting this implementation complete and correct
+these would be fun endeavors, getting this implementation complete and correct
 shall be the current focus.
 
 ## Legalese
