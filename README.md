@@ -92,7 +92,7 @@ examples/        — one file per worked scenario or regression test, each run b
                    audits against the paper's formal semantics.
 ```
 
-## Design choices worth knowing about
+## Design Choices Worth Knowing About
 
 Each design choice below has a detailed
 [Architecture Decision Record](docs/adr/README.md) explaining the reasoning and
