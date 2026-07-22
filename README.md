@@ -47,9 +47,10 @@ section it implements.
 
 The paper's central results:
 
-- Theorem 1 (**TIPNI**),
-- Theorem 2 (**Insulated TIPNI**),
-- Theorem 3 (**oracular correctness**)
+- Theorem 1: **Termination-insensitive probabilistic noninterference
+(TIPNI) theorem (TIPNI)**,
+- Theorem 2 **Insulated TIPNI**,
+- Theorem 3 **Oracular Correctness**
 
 are machine-checked in the paper's Lean 4 development. Porting the _algorithm_
 to TypeScript does not port the _proof_.
@@ -155,6 +156,6 @@ Porting to another programming language (like Python, Rust or Haskell). While
 this would be fun endeavors, getting this implementation complete and correct
 shall be the current focus.
 
-## Legal Stuff
+## Legalese
 
 Copyright, 2026 - Andreas Schlapbach
